@@ -33,6 +33,10 @@ function arrayCombinations(array, size, fn) {
   })
 }
 
+function padEnd(value, s) {
+  return String(value).padEnd(s)
+}
+
 function padStart(value, s) {
   return String(value).padStart(s)
 }
@@ -41,5 +45,6 @@ module.exports = {
   intercalate,
   intersectionCount,
   arrayCombinations,
-  padStart
+  padStart,
+  padEnd
 }
