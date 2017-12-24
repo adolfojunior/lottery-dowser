@@ -1,1 +1,5 @@
 node_modules
+
+script/*.HTM
+script/*.HTML
+script/*.html
