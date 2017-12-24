@@ -1,14 +1,14 @@
 const packageJson = require('../package.json')
 
 const chalk = require('chalk')
-const program = require('commander')
+const yargs = require('yargs')
 
 const { padStart } = require('./utils')
 const { LotteryDowser } = require('./lottery-dowser')
 
 const log = console.log
 
-function executeStatistics(program, lottery) {
+function executeStatistics(lottery) {
 
   const rowStatistics = lottery.getRowStatistics()
   const numberStatistics = lottery.getNumberStatistics()
@@ -79,6 +79,7 @@ function suggestNumbers(program, lottery) {
   }
 }
 
+.argv
 function main(program) {
 
   const lottery = new LotteryDowser(require('./data/megasena'))
