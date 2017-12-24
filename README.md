@@ -19,6 +19,15 @@ OR
 ```bash
 npm start -- --help
 ```
+Which some custom options:
+```bash
+# generate lotofacil games with 7 numbers
+npm start -- megasena -g --limit 10 --size 7
+# lotomania you can select 50 numbers to match 20
+npm start -- lotomania -g --limit 10 --size 50
+# lotofacil you can select 50 numbers to match 20
+npm start -- lotofacil -g --limit 10
+```
 
 ### Updating data
 
