@@ -18,14 +18,19 @@ function intersectionCount(a, b) {
 
 function arrayCombinations(array, size, fn) {
   function generate(deep, begin, end, state) {
+    let next = true
     for (let n = begin; n <= end; n++) {
       state.result[deep] = array[n]
       if ((deep + 1) < size) {
-        generate(deep + 1, n + 1, end + 1, state)
+        next = generate(deep + 1, n + 1, end + 1, state)
       } else {
-        fn(state.result, state.count++)
+        next = fn(state.result, state.count++)
+      }
+      if (next === false) {
+        break
       }
     }
+    return next
   }
   generate(0, 0, array.length - size, {
     count: 0,
@@ -41,10 +46,13 @@ function padStart(value, s) {
   return String(value).padStart(s)
 }
 
+const log = console.log
+
 module.exports = {
   intercalate,
   intersectionCount,
   arrayCombinations,
   padStart,
-  padEnd
+  padEnd,
+  log
 }

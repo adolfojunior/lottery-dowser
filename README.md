@@ -13,7 +13,11 @@ npm install
 Now, compute statistics and generate data
 
 ```bash
-npm start [megasena|lotofacil|lotomania]
+npm start -- [megasena|lotofacil|lotomania]
+```
+OR
+```bash
+npm start -- --help
 ```
 
 ### Updating data

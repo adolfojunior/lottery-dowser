@@ -1,4 +1,3 @@
-
 class SortedKeyMap {
   constructor({ factory, sorter }) {
     this._values = {}
@@ -22,7 +21,7 @@ class SortedKeyMap {
     return this._values
   }
   set(key, value) {
-    this._clear()
+    this.clearCache()
     return this._values[key] = value
   }
   get(key) {
@@ -31,7 +30,7 @@ class SortedKeyMap {
   iterate(fn, sorter) {
     this.keys(sorter).forEach(key => fn(key, this.get(key)))
   }
-  _clear() {
+  clearCache() {
     this._cache = null
   }
 }
@@ -51,7 +50,7 @@ class Statistics extends SortedKeyMap {
     return this.add(key, 1)
   }
   stats(update) {
-    if (update || this._stats === null) {
+    if (update === true || this._stats === null) {
       this._stats = this.compute()
     }
     return this._stats
@@ -79,6 +78,10 @@ class Statistics extends SortedKeyMap {
     })
     stats.avg = stats.avg / size
     return stats
+  }
+  clearCache() {
+    super.clearCache()
+    this._stats = null
   }
 }
 
