@@ -18,9 +18,9 @@ npm start [megasena|lotofacil|lotomania]
 
 ### Updating data
 
-First add the last HTML collected at the CAIXA site ( [megasena](loterias.caixa.gov.br/wps/portal/loterias/landing/megasena/), [lotofacil](loterias.caixa.gov.br/wps/portal/loterias/landing/lotofacil/),[lotomania](loterias.caixa.gov.br/wps/portal/loterias/landing/lotomania/) ) to the (script)[script] folder.
+First add the last HTML collected at the CAIXA site ( [megasena](http://loterias.caixa.gov.br/wps/portal/loterias/landing/megasena/), [lotofacil](http://loterias.caixa.gov.br/wps/portal/loterias/landing/lotofacil/),[lotomania](http://loterias.caixa.gov.br/wps/portal/loterias/landing/lotomania/) ) to the (/script)[/script] folder.
 
-The command migth parse the HTML and update the JS file at (src/data)[src/data] folder.
+The command migth parse the HTML and update the JS file at (/src/data)[/src/data] folder.
 
 ```bash
 npm run update [megasena|lotofacil|lotomania]
