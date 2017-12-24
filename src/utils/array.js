@@ -6,17 +6,17 @@ function intercalate(array) {
     a.push(array[i])
     a.push(array[m + i])
   }
-  if (array.length % 2 === 1) {
+  if (array.length > a.length) {
     a.push(array[array.length - 1])
   }
   return a
 }
 
-function intersectionCount(a, b) {
+function countIntersection(a, b) {
   return a.reduce((c, n) => (b.includes(n) ? c + 1 : c), 0)
 }
 
-function arrayCombinations(array, size, fn) {
+function generateCombinations(array, size, fn) {
   function generate(deep, begin, end, state) {
     let next = true
     for (let n = begin; n <= end; n++) {
@@ -38,21 +38,8 @@ function arrayCombinations(array, size, fn) {
   })
 }
 
-function padEnd(value, s) {
-  return String(value).padEnd(s)
-}
-
-function padStart(value, s) {
-  return String(value).padStart(s)
-}
-
-const log = console.log
-
 module.exports = {
   intercalate,
-  intersectionCount,
-  arrayCombinations,
-  padStart,
-  padEnd,
-  log
+  countIntersection,
+  generateCombinations
 }

@@ -1,3 +1,4 @@
+
 class SortedKeyMap {
   constructor({ factory, sorter }) {
     this._values = {}

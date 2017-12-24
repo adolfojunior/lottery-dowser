@@ -1,16 +1,17 @@
 const yargs = require('yargs')
-const { log } = require('./utils')
+const { log } = require('./log')
+const { loadData } = require('./data')
 const { LotteryData } = require('./lottery-data')
 const { LotteryDowser } = require('./lottery-dowser')
 
 function execute(name, options) {
-  const data = new LotteryData(require(`./data/${name}`))
+  const data = new LotteryData(loadData(name))
   const dowser = new LotteryDowser(name, data)
   dowser.run(options)
 }
 
 function main(argv) {
-  const name = argv._[0]
+  const [ name ] = argv._
   if (name) {
     execute(name, argv)
   } else {
