@@ -5,7 +5,7 @@ const { LotteryDowser } = require('./lottery-dowser')
 
 function execute(name, options) {
   const data = new LotteryData(require(`./data/${name}`))
-  const dowser = new LotteryDowser(data)
+  const dowser = new LotteryDowser(name, data)
   dowser.run(options)
 }
 

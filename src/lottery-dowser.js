@@ -2,7 +2,8 @@ const chalk = require('chalk')
 const { log, padStart } = require('./utils')
 
 class LotteryDowser {
-  constructor(data) {
+  constructor(name, data) {
+    this.name = name
     this.data = data
   }
 
@@ -78,14 +79,9 @@ class LotteryDowser {
       }
 
       const ocurrencies = this.data.getOcurrencyCount(numbers)
-      if (
-        // TODO add a strategy per dataset
-        ocurrencies.get(3) <= 3 &&
-        ocurrencies.get(4) === 0 &&
-        ocurrencies.get(5) === 0 &&
-        ocurrencies.get(6) === 0
-      ) {
-        log(chalk`* Combination: %s, numbers: %j, ocurrency: %j`,
+
+      if (this.validateCombination(numbers, ocurrencies)) {
+        log(chalk`* Combination: {whiteBright %s}, numbers: {yellowBright %j}, ocurrency: {blueBright %j}`,
           count,
           numbers,
           ocurrencies.values()
@@ -95,6 +91,17 @@ class LotteryDowser {
         log(` - working...`, count)
       }
     })
+  }
+
+  validateCombination(numbers, ocurrencies) {
+    if (this.name === `megasena`) {
+      return ocurrencies.get(3) <= 3 &&
+          ocurrencies.get(4) === 0 &&
+          ocurrencies.get(5) === 0 &&
+          ocurrencies.get(6) === 0
+    }
+    // TODO add other validators
+    return true
   }
 }
 
