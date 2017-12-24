@@ -9,16 +9,13 @@
     "node": ">=8"
   },
   "scripts": {
-    "start": "node .",
-    "parse-lotofacil": "node script/parser.js lotofacil",
-    "parse-lotomania": "node script/parser.js lotomania",
-    "parse-megasena": "node script/parser.js megasena",
+    "start": "node src/index.js",
+    "update": "node script/update.js",
     "test": "echo \"Remember that sometimes not getting what you want is a wonderful stroke of luck. ― Dalai Lama\""
   },
   "dependencies": {
     "chalk": "^2.3.0",
     "cheerio": "^1.0.0-rc.2",
-    "request": "^2.83.0",
     "yargs": "^10.0.3"
   }
 }

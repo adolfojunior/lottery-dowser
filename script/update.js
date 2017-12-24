@@ -58,7 +58,7 @@ require(`yargs`)
     command: `megasena`,
     describe: `Parse MEGASENA html`,
     builder: (yargs) => yargs.default(`html`, `D_MEGA.HTM`),
-    handler: ({ html }) => parseAndSave(html, `megasena-2.js`, 2, 7)
+    handler: ({ html }) => parseAndSave(html, `megasena.js`, 2, 7)
   })
   .command({
     command: `lotomania`,

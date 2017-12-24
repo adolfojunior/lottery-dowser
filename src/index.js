@@ -8,7 +8,7 @@ const { LotteryDowser } = require('./lottery-dowser')
 
 const log = console.log
 
-function executeStatistics(lottery) {
+function executeStatistics({ verbose }, lottery) {
 
   const rowStatistics = lottery.getRowStatistics()
   const numberStatistics = lottery.getNumberStatistics()
@@ -17,7 +17,7 @@ function executeStatistics(lottery) {
   log(chalk`{whiteBright # By Number:}`)
   log(chalk` - statistics: {cyanBright %j}`, numberStatistics.stats())
 
-  if (program.verbose === true) {
+  if (verbose === true) {
     numberStatistics.iterate((number, total) => {
       const relations = lottery.getNumberRelations().get(number)
       const sortedRelations = relations.keys()
@@ -36,7 +36,7 @@ function executeStatistics(lottery) {
   log(chalk` - statistics : {yellow %j}`, rowStatistics.stats())
   log(chalk` - ocurrencies: {yellow %j}`, rowOcurrencyStatistics.values())
 
-  if (program.verbose === true) {
+  if (verbose === true) {
     rowStatistics.iterate((row, total) => {
       log(chalk` * Row(%s), total: {blueBright %s}, ocurrencies: {greenBright %j}`,
         padStart(Number(row) + 1, 4),
@@ -47,19 +47,19 @@ function executeStatistics(lottery) {
   }
 }
 
-function suggestNumbers(program, lottery) {
+function suggestNumbers({ generate, size }, lottery) {
 
   const numbersByRelation = lottery.getNumbersItercalatedByRelation()
-  const suggestedNumbers = numbersByRelation.splice(0, 7)
+  const suggestedNumbers = numbersByRelation.splice(0, size)
 
   log(chalk`{whiteBright # Suggestions:}`)
   log(chalk` - numbers     : {cyanBright %j}`, suggestedNumbers)
   log(chalk` - occurrencies: {magentaBright %j}`, lottery.getOcurrencyCount(suggestedNumbers).values())
 
-  if (program.generate === true) {
+  if (generate === true) {
     log(chalk`{whiteBright # Combinations:}`)
 
-    lottery.combineNumbers(numbersByRelation, 6, (numbers, i) => {
+    lottery.combineNumbers(numbersByRelation, size, (numbers, i) => {
       const ocurrencies = lottery.getOcurrencyCount(numbers)
       if (
         ocurrencies.get(3) <= 3 &&
@@ -79,19 +79,46 @@ function suggestNumbers(program, lottery) {
   }
 }
 
-.argv
-function main(program) {
-
-  const lottery = new LotteryDowser(require('./data/megasena'))
-
-  executeStatistics(program, lottery)
-  suggestNumbers(program, lottery)
+function lottery(argv, name) {
+  const lottery = new LotteryDowser(require(`./data/${name}`))
+  executeStatistics(argv, lottery)
+  suggestNumbers(argv, lottery)
 }
 
-main(
-  program
-    .version(packageJson.version)
-    .option('-g, --generate', 'Generate Combinations')
-    .option('-v, --verbose', 'Verbose at showing information')
-    .parse(process.argv)
-)
+require(`yargs`)
+  .option(`generate`, {
+    alias: `g`,
+    describe: `Generate combinations after the statistics`,
+    type: `boolean`
+  })
+  .option(`verbose`, {
+    alias: `v`,
+    describe: `Show detailed information about statistics`,
+    type: `boolean`
+  })
+  .option(`size`, {
+    alias: `s`,
+    describe: `Quantity of numbers that should be generated`,
+    type: `number`
+  })
+  .command({
+    command: `megasena`,
+    describe: `Generate MEGASENA statistics`,
+    handler: (argv) => lottery(argv, `megasena`),
+    builder: (yargs) => yargs.default({ size: 6 }),
+  })
+  .command({
+    command: `lotomania`,
+    describe: `Generate LOTOMANIA statistics`,
+    handler: (argv) => lottery(argv, `lotomania`),
+    builder: (yargs) => yargs.default({ size: 20 }),
+  })
+  .command({
+    command: `lotofacil`,
+    describe: `Generate LOTOFACIL statistics`,
+    handler: (argv) => lottery(argv, `lotofacil`),
+    builder: (yargs) => yargs.default({ size: 15 }),
+  })
+  .demandCommand(1, `You need at least one command`)
+  .help()
+  .argv
