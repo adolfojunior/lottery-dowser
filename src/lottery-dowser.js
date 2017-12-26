@@ -142,9 +142,9 @@ class LotteryDowser {
   }
 
   validateRowTotal(numbers) {
+    const rowStats = this.data.getRowStatistics().stats()
     const rowTotal = this.data.getRowOccurrencyTotal(numbers)
-    const rowStatistics = this.data.getRowStatistics()
-    return rowTotal > rowStatistics.min && rowTotal < rowStatistics.max
+    return rowTotal > rowStats.min && rowTotal < rowStats.max
   }
 }
 
