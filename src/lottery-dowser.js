@@ -126,8 +126,8 @@ class LotteryDowser {
 
   validateMegasena(combination, occurrences) {
     const validOccur =
-      // occurrences.get(3) <= 5 &&
-      // occurrences.get(4) === 0 &&
+      occurrences.get(3) <= 5 &&
+      occurrences.get(4) === 0 &&
       occurrences.get(5) === 0 &&
       occurrences.get(6) === 0
     return validOccur && this.validateRowTotal(combination)
