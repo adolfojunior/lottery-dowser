@@ -41,7 +41,7 @@ npm run update [megasena|lotofacil|lotomania]
 
 ### Try it using Docker
 
-```
+```bash
 # Docker command
 docker run -it --rm --name dowser -v "$PWD":/usr/src/app -w /usr/src/app node:9-alpine ...
 # generate lotofacil games with 7 numbers
