@@ -12,16 +12,16 @@ class CombinationValidator {
     }
   }
 
-  validate(name, combination, occcurrences) {
+  validate(name, combination, occurrences) {
     const validator = this.validators[name]
     if (validator) {
-      return validator(combination, occcurrences)
+      return validator(combination, occurrences)
     }
     // otherwise, it's valid
     return true
   }
 
-  validateMegasena(combination, occcurrences) {
+  validateMegasena(combination, occurrences) {
     return
       occurrences.get(3) <= 3 &&
       occurrences.get(4) === 0 &&
@@ -56,10 +56,10 @@ class LotteryDowser {
 
     const rowStatistics = this.data.getRowStatistics()
     const numberStatistics = this.data.getNumberStatistics()
-    const rowOcurrencyStatistics = this.data.getRowOcurrencyStatistics()
+    const rowOcurrencyStatistics = this.data.getRowOccurrencyStatistics()
 
     log(chalk`{whiteBright.inverse # By Number:}`)
-    log(chalk` - statistics: {blueBright %j}`, numberStatistics.stats())
+    log(chalk` - stats: {blueBright %j}`, numberStatistics.stats())
 
     if (verbose === true) {
       numberStatistics.iterate((number, total) => {
@@ -77,12 +77,12 @@ class LotteryDowser {
     }
 
     log(chalk`{whiteBright.inverse # By Row:}`)
-    log(chalk` - statistics : {blueBright %j}`, rowStatistics.stats())
-    log(chalk` - occurrences: {yellowBright %j}`, rowOcurrencyStatistics.values())
+    log(chalk` - stats: {blueBright %j}`, rowStatistics.stats())
+    log(chalk` - occur: {yellowBright %j}`, rowOcurrencyStatistics.values())
 
     if (verbose === true) {
       rowStatistics.iterate((row, total) => {
-        log(chalk` * ROW {magentaBright %s}, total: {blueBright %s}, occurrences: {yellowBright %j}`,
+        log(chalk` * ROW {magentaBright %s}, total: {blueBright %s}, occur: {yellowBright %j}`,
           pad(Number(row) + 1, 4),
           pad(total, 4),
           this.data.getRowOccurrences().get(row).values()
@@ -93,11 +93,11 @@ class LotteryDowser {
 
   suggestNumbers({ size }) {
 
-    const suggestedNumbers = this.data.getNumbersItercalatedByRelation().splice(0, size)
+    const suggestedNumbers = this.data.getNumbersByRelation().splice(0, size)
 
     log(chalk`{whiteBright.inverse # Suggestions:}`)
-    log(chalk` - numbers     : {greenBright %j}`, suggestedNumbers)
-    log(chalk` - occcurrences: {yellowBright %j}`, this.data.countOccurrences(suggestedNumbers).values())
+    log(chalk` - numbers: {greenBright %j}`, suggestedNumbers)
+    log(chalk` - occur  : {yellowBright %j}`, this.data.countOccurrences(suggestedNumbers).values())
   }
 
   generateCombinations({ generate, size, limit }) {
@@ -107,7 +107,7 @@ class LotteryDowser {
     }
 
     const counter = new Counter()
-    const seedNumbers = this.data.getNumbersItercalatedByRelation()
+    const seedNumbers = this.data.getNumbersByRelation()
 
     log(chalk`{whiteBright.inverse # Combinations:} %s`, limit ? `(limit of ${limit})` : `(no limit)` )
 

@@ -85,7 +85,7 @@ class LotteryData {
     }, new Statistics())
   }
 
-  getNumbersItercalatedByRelation() {
+  getNumbersByRelation() {
     return intercalate(this.mergeRelations(this.getNumberStatistics().keys()))
   }
 
