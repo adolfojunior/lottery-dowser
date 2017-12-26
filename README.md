@@ -38,3 +38,16 @@ The command migth parse the HTML and update the JS file at [/src/data](/src/data
 ```bash
 npm run update [megasena|lotofacil|lotomania]
 ```
+
+### Try it using Docker
+
+```
+# Docker command
+docker run -it --rm --name dowser -v "$PWD":/usr/src/app -w /usr/src/app node:9-alpine ...
+# generate lotofacil games with 7 numbers
+docker run -it --rm --name dowser -v "$PWD":/usr/src/app -w /usr/src/app node:9-alpine node . megasena -g --limit 10 --size 7
+# lotomania you can select 50 numbers to match 20
+docker run -it --rm --name dowser -v "$PWD":/usr/src/app -w /usr/src/app node:9-alpine node . lotomania -g --limit 10 --size 50
+# lotofacil you can select 50 numbers to match 20
+docker run -it --rm --name dowser -v "$PWD":/usr/src/app -w /usr/src/app node:9-alpine node . lotofacil -g --limit 10
+```
