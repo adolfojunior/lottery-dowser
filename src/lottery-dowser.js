@@ -25,7 +25,7 @@ class LotteryDowser {
 
     const rowStatistics = this.data.getRowStatistics()
     const numberStatistics = this.data.getNumberStatistics()
-    const rowOcurrencyStatistics = this.data.getRowOccurrencyStatistics()
+    const rowOccurrencyStatistics = this.data.getRowOccurrencyStatistics()
 
     log(chalk`{whiteBright.underline # By Number:}`)
     log(chalk` - stats: {blueBright %j}`, numberStatistics.stats())
@@ -50,7 +50,7 @@ class LotteryDowser {
 
     log(chalk`{whiteBright.underline # By Row:}`)
     log(chalk` - stats: {blueBright %j}`, rowStatistics.stats())
-    log(chalk` - occur: {yellowBright %j}`, rowOcurrencyStatistics.values())
+    log(chalk` - occur: {yellowBright %j}`, rowOccurrencyStatistics.values())
 
     if (verbose || showRows) {
       rowStatistics.iterate((row, total) => {
@@ -104,7 +104,7 @@ class LotteryDowser {
       const occurrences = this.data.countOccurrences(numbers)
 
       if (this.validateCombination(numbers, occurrences)) {
-        log(chalk`* COM {magentaBright %s}, numbers: {greenBright %j}, ocurrency: {yellowBright %j}`,
+        log(chalk`* COM {magentaBright %s}, numbers: {greenBright %j}, occurrency: {yellowBright %j}`,
           i,
           numbers,
           occurrences.values()
@@ -125,26 +125,41 @@ class LotteryDowser {
   }
 
   validateMegasena(combination, occurrences) {
-    const validOccur =
-      occurrences.get(3) <= 5 &&
-      occurrences.get(4) === 0 &&
-      occurrences.get(5) === 0 &&
-      occurrences.get(6) === 0
+    const validOccur = this.validateOccurrences(occurrences,
+      [3,5],[4,0],[5,0],[6,0]
+    )
     return validOccur && this.validateRowTotal(combination)
   }
 
   validateLotofacil(combination, occurrences) {
-    return this.validateRowTotal(combination)
+    const validOccur = this.validateOccurrences(occurrences,
+      [12,10],[13,0],[14,0],[15,0]
+    )
+    return validOccur && this.validateRowTotal(combination)
   }
 
   validateLotomania(combination, occurrences) {
-    return this.validateRowTotal(combination)
+    const validOccur = this.validateOccurrences(occurrences,
+      [9,3],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0]
+    )
+    return validOccur && this.validateRowTotal(combination)
   }
 
   validateRowTotal(numbers) {
     const rowStats = this.data.getRowStatistics().stats()
     const rowTotal = this.data.getRowOccurrencyTotal(numbers)
     return rowTotal > rowStats.min && rowTotal < rowStats.max
+  }
+
+  validateOccurrences(occurrences, ...rules) {
+    for (let i = 0; i < rules.length; i++) {
+      const [entry, value] = rules[i]
+      const occur = occurrences.get(entry)
+      if (occur > value) {
+        return false
+      }
+    }
+    return true
   }
 }
 

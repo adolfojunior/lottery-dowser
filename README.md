@@ -1,4 +1,4 @@
-# Dowser
+# Lottery Dowser -< )))
 
 Let the Dowser compute the luck for you!
 
