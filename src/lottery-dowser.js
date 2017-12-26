@@ -12,28 +12,28 @@ class CombinationValidator {
     }
   }
 
-  validate(name, combination, occurrencies) {
+  validate(name, combination, occcurrences) {
     const validator = this.validators[name]
     if (validator) {
-      return validator(combination, occurrencies)
+      return validator(combination, occcurrences)
     }
     // otherwise, it's valid
     return true
   }
 
-  validateMegasena(combination, occurrencies) {
+  validateMegasena(combination, occcurrences) {
     return
-      ocurrencies.get(3) <= 3 &&
-      ocurrencies.get(4) === 0 &&
-      ocurrencies.get(5) === 0 &&
-      ocurrencies.get(6) === 0
+      occurrences.get(3) <= 3 &&
+      occurrences.get(4) === 0 &&
+      occurrences.get(5) === 0 &&
+      occurrences.get(6) === 0
   }
 
-  validateLotofacil(combination, ocurrencies) {
+  validateLotofacil(combination, occurrences) {
     return true
   }
 
-  validateLotomania(combination, ocurrencies) {
+  validateLotomania(combination, occurrences) {
     return true
   }
 }
@@ -78,14 +78,14 @@ class LotteryDowser {
 
     log(chalk`{whiteBright.inverse # By Row:}`)
     log(chalk` - statistics : {blueBright %j}`, rowStatistics.stats())
-    log(chalk` - ocurrencies: {yellowBright %j}`, rowOcurrencyStatistics.values())
+    log(chalk` - occurrences: {yellowBright %j}`, rowOcurrencyStatistics.values())
 
     if (verbose === true) {
       rowStatistics.iterate((row, total) => {
-        log(chalk` * ROW {magentaBright %s}, total: {blueBright %s}, ocurrencies: {yellowBright %j}`,
+        log(chalk` * ROW {magentaBright %s}, total: {blueBright %s}, occurrences: {yellowBright %j}`,
           pad(Number(row) + 1, 4),
           pad(total, 4),
-          this.data.getRowOcurrencies().get(row).values()
+          this.data.getRowOccurrences().get(row).values()
         )
       })
     }
@@ -97,7 +97,7 @@ class LotteryDowser {
 
     log(chalk`{whiteBright.inverse # Suggestions:}`)
     log(chalk` - numbers     : {greenBright %j}`, suggestedNumbers)
-    log(chalk` - occurrencies: {yellowBright %j}`, this.data.getOcurrencyCount(suggestedNumbers).values())
+    log(chalk` - occcurrences: {yellowBright %j}`, this.data.countOccurrences(suggestedNumbers).values())
   }
 
   generateCombinations({ generate, size, limit }) {
@@ -117,13 +117,13 @@ class LotteryDowser {
         return false
       }
 
-      const ocurrencies = this.data.getOcurrencyCount(numbers)
+      const occurrences = this.data.countOccurrences(numbers)
 
-      if (this.validateCombination(numbers, ocurrencies)) {
+      if (this.validateCombination(numbers, occurrences)) {
         log(chalk`* COM {magentaBright %s}, numbers: {greenBright %j}, ocurrency: {yellowBright %j}`,
           i,
           numbers,
-          ocurrencies.values()
+          occurrences.values()
         )
         counter.increment()
       } else if (i % 10000 === 0) {
@@ -132,8 +132,8 @@ class LotteryDowser {
     })
   }
 
-  validateCombination(numbers, ocurrencies) {
-    return this.validator.validate(this.name, numbers, ocurrencies)
+  validateCombination(numbers, occurrences) {
+    return this.validator.validate(this.name, numbers, occurrences)
   }
 }
 
