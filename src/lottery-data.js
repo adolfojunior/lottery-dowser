@@ -52,13 +52,13 @@ class LotteryData {
     })
   }
 
-  getRowOcurrencyStatistics() {
-    return this._field(`rowOcurrencyStatistics`, () => {
+  getRowOccurrencyStatistics() {
+    return this._field(`rowOccurrencyStatistics`, () => {
       const occurrences = new Statistics()
       const rowOccurrences = this.getRowOccurrences()
       rowOccurrences.iterate((row, statistics) => {
-        statistics.iterate((ocurrency, total) => {
-          occurrences.add(ocurrency, total)
+        statistics.iterate((occurrency, total) => {
+          occurrences.add(occurrency, total)
         })
       })
       return occurrences
