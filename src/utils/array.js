@@ -1,17 +1,4 @@
 
-function intercalate(array) {
-  const a = []
-  const m = ~~(array.length / 2)
-  for (let i = 0; i < m; i++) {
-    a.push(array[i])
-    a.push(array[m + i])
-  }
-  if (array.length > a.length) {
-    a.push(array[array.length - 1])
-  }
-  return a
-}
-
 function countIntersection(a, b) {
   return a.reduce((c, n) => (b.includes(n) ? c + 1 : c), 0)
 }
@@ -39,7 +26,6 @@ function generateCombinations(array, size, fn) {
 }
 
 module.exports = {
-  intercalate,
   countIntersection,
   generateCombinations
 }

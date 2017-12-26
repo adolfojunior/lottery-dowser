@@ -3,47 +3,16 @@ const { log } = require('./log')
 const { pad } = require('./utils/string')
 const { Counter } = require('./utils/counter')
 
-class CombinationValidator {
-  constructor() {
-    this.validators = {
-      megasena: this.validateMegasena.bind(this),
-      lotofacil: this.validateLotofacil.bind(this),
-      lotomania: this.validateLotomania.bind(this)
-    }
-  }
-
-  validate(name, combination, occurrences) {
-    const validator = this.validators[name]
-    if (validator) {
-      return validator(combination, occurrences)
-    }
-    // otherwise, it's valid
-    return true
-  }
-
-  validateMegasena(combination, occurrences) {
-    return
-      occurrences.get(3) <= 3 &&
-      occurrences.get(4) === 0 &&
-      occurrences.get(5) === 0 &&
-      occurrences.get(6) === 0
-  }
-
-  validateLotofacil(combination, occurrences) {
-    return true
-  }
-
-  validateLotomania(combination, occurrences) {
-    return true
-  }
-}
-
 class LotteryDowser {
   constructor(name, data) {
     this.name = name
     this.data = data
     // register combination validators
-    this.validator = new CombinationValidator()
+    this.validators = {
+      megasena: this.validateMegasena.bind(this),
+      lotofacil: this.validateLotofacil.bind(this),
+      lotomania: this.validateLotomania.bind(this)
+    }
   }
 
   run(options) {
@@ -52,35 +21,38 @@ class LotteryDowser {
     this.generateCombinations(options)
   }
 
-  executeStatistics({ verbose }) {
+  executeStatistics({ verbose, showNumbers, showRows }) {
 
     const rowStatistics = this.data.getRowStatistics()
     const numberStatistics = this.data.getNumberStatistics()
     const rowOcurrencyStatistics = this.data.getRowOccurrencyStatistics()
 
-    log(chalk`{whiteBright.inverse # By Number:}`)
+    log(chalk`{whiteBright.underline # By Number:}`)
     log(chalk` - stats: {blueBright %j}`, numberStatistics.stats())
 
-    if (verbose === true) {
+    if (verbose || showNumbers) {
       numberStatistics.iterate((number, total) => {
-        const relations = this.data.getNumberRelations().get(number)
-        const sortedRelations = relations.keys()
-        const relationToString = (n) => `${pad(n, 2)}(${pad(numberStatistics.get(n), 3)})`
-
-        log(chalk` * NUM {magentaBright %s}, total: {blueBright %s}, relations: {greenBright %s ... %s}`,
+        const relations = this.data.getNumberRelations(number)
+        const relationKeys = relations.keys()
+        const relationToString = (number) => {
+          const relationOccur = relations.get(number)
+          const numberOccur = numberStatistics.get(number)
+          return `${pad(number, 2)}(${relationOccur}, ${numberOccur})`
+        }
+        log(chalk` * NUM {magentaBright %s}, total: {blueBright %s}, rel: {greenBright %s ... %s}`,
           pad(number, 2),
           pad(total, 3),
-          sortedRelations.splice(0, 3).map(relationToString).join(','),
-          sortedRelations.splice(-3).map(relationToString).join(',')
+          relationKeys.slice(0, 3).map(relationToString).join(' ,'),
+          relationKeys.slice(-3).map(relationToString).join(' ,'),
         )
       })
     }
 
-    log(chalk`{whiteBright.inverse # By Row:}`)
+    log(chalk`{whiteBright.underline # By Row:}`)
     log(chalk` - stats: {blueBright %j}`, rowStatistics.stats())
     log(chalk` - occur: {yellowBright %j}`, rowOcurrencyStatistics.values())
 
-    if (verbose === true) {
+    if (verbose || showRows) {
       rowStatistics.iterate((row, total) => {
         log(chalk` * ROW {magentaBright %s}, total: {blueBright %s}, occur: {yellowBright %j}`,
           pad(Number(row) + 1, 4),
@@ -93,11 +65,23 @@ class LotteryDowser {
 
   suggestNumbers({ size }) {
 
-    const suggestedNumbers = this.data.getNumbersByRelation().splice(0, size)
+    const moreFrequently = this.data.getNumbersByRelation({ freq: `more` }).slice(0, size)
+    const lessFrequently = this.data.getNumbersByRelation({ freq: `less` }).slice(0, size)
 
-    log(chalk`{whiteBright.inverse # Suggestions:}`)
-    log(chalk` - numbers: {greenBright %j}`, suggestedNumbers)
-    log(chalk` - occur  : {yellowBright %j}`, this.data.countOccurrences(suggestedNumbers).values())
+    const moreFrequentlyTotal = this.data.getRowOccurrencyTotal(moreFrequently)
+    const lessFrequentlyTotal = this.data.getRowOccurrencyTotal(lessFrequently)
+
+    log(chalk`{whiteBright.underline # Suggestions:}`)
+    log(chalk` - numbers: {greenBright %j}, total: {blueBright %s} (freq. hight to low)`,
+      moreFrequently,
+      moreFrequentlyTotal
+    )
+    log(chalk` - occur  : {yellowBright %j}`, this.data.countOccurrences(moreFrequently).values())
+    log(chalk` - numbers: {greenBright %j}, total: {blueBright %s} (freq. hight to low)`,
+      lessFrequently,
+      lessFrequentlyTotal
+    )
+    log(chalk` - occur  : {yellowBright %j}`, this.data.countOccurrences(lessFrequently).values())
   }
 
   generateCombinations({ generate, size, limit }) {
@@ -107,9 +91,9 @@ class LotteryDowser {
     }
 
     const counter = new Counter()
-    const seedNumbers = this.data.getNumbersByRelation()
+    const seedNumbers = this.data.getNumbersByRelation({ freq: `less` })
 
-    log(chalk`{whiteBright.inverse # Combinations:} %s`, limit ? `(limit of ${limit})` : `(no limit)` )
+    log(chalk`{whiteBright.underline # Combinations:} %s`, limit ? `(limit of ${limit})` : `(no limit)` )
 
     this.data.combineNumbers(seedNumbers, size, (numbers, i) => {
       // stop it
@@ -132,8 +116,35 @@ class LotteryDowser {
     })
   }
 
-  validateCombination(numbers, occurrences) {
-    return this.validator.validate(this.name, numbers, occurrences)
+  validateCombination(combination, occurrences) {
+    const validator = this.validators[this.name]
+    if (validator) {
+      return validator(combination, occurrences)
+    }
+    return true
+  }
+
+  validateMegasena(combination, occurrences) {
+    const validOccur =
+      // occurrences.get(3) <= 5 &&
+      // occurrences.get(4) === 0 &&
+      occurrences.get(5) === 0 &&
+      occurrences.get(6) === 0
+    return validOccur && this.validateRowTotal(combination)
+  }
+
+  validateLotofacil(combination, occurrences) {
+    return this.validateRowTotal(combination)
+  }
+
+  validateLotomania(combination, occurrences) {
+    return this.validateRowTotal(combination)
+  }
+
+  validateRowTotal(numbers) {
+    const rowTotal = this.data.getRowOccurrencyTotal(numbers)
+    const rowStatistics = this.data.getRowStatistics()
+    return rowTotal > rowStatistics.min && rowTotal < rowStatistics.max
   }
 }
 

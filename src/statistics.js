@@ -4,19 +4,15 @@ class SortedKeyMap {
     this._values = {}
     this._factory = factory
     this._sorter = sorter
-    this._cache = null
+    this._cachedKeys = null
   }
-  sorter() {
-    return this._sorter
-  }
-  keys(sorter = this.sorter()) {
-    if (this._cache && this._cache.sorter === sorter) {
-      return this._cache.keys
+  keys() {
+    if (this._cachedKeys !== null) {
+      return Array.from(this._cachedKeys)
     }
     const keys = Object.keys(this._values)
-    keys.sort((a, b) => sorter(this.get(a), this.get(b)))
-    this._cache = { sorter, keys }
-    return this._cache.keys
+    this._sorter && keys.sort((a, b) => this._sorter(this.get(a), this.get(b)))
+    return Array.from(this._cachedKeys = keys)
   }
   values() {
     return this._values
@@ -28,11 +24,11 @@ class SortedKeyMap {
   get(key) {
     return this._values[key] || (this._values[key] = this._factory())
   }
-  iterate(fn, sorter) {
-    this.keys(sorter).forEach(key => fn(key, this.get(key)))
+  iterate(fn) {
+    this.keys().forEach(key => fn(key, this.get(key)))
   }
   clearCache() {
-    this._cache = null
+    this._cachedKeys = null
   }
 }
 

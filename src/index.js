@@ -25,6 +25,16 @@ yargs
     describe: `Generate combinations after the statistics`,
     type: `boolean`
   })
+  .option(`showNumbers`, {
+    alias: `n`,
+    describe: `Show detailed information about each number`,
+    type: `boolean`
+  })
+  .option(`showRows`, {
+    alias: `r`,
+    describe: `Show detailed information about each row`,
+    type: `boolean`
+  })
   .option(`verbose`, {
     alias: `v`,
     describe: `Show detailed information about statistics`,

@@ -1,5 +1,7 @@
 const { Statistics, StatisticMap } = require('./statistics')
-const { intercalate, countIntersection, generateCombinations } = require('./utils/array')
+const { countIntersection, generateCombinations } = require('./utils/array')
+
+const ASC = 1, DESC = 2
 
 class LotteryData {
 
@@ -34,11 +36,15 @@ class LotteryData {
   getRowStatistics() {
     return this._field(`rowStatistics`, () => {
       return this.dataset.reduce((stats, numbers, row) => {
-        const numStats = this.getNumberStatistics()
-        stats.set(row, numbers.reduce((t, n) => t + numStats.get(n), 0))
+        stats.set(row, this.getRowOccurrencyTotal(numbers))
         return stats
       }, new Statistics())
     })
+  }
+
+  getRowOccurrencyTotal(numbers) {
+    const stats = this.getNumberStatistics()
+    return numbers.reduce((total, number) => total + stats.get(number), 0)
   }
   
   getRowOccurrences() {
@@ -65,7 +71,7 @@ class LotteryData {
     })
   }
 
-  getNumberRelations() {
+  getNumberRelations(key) {
     return this._field(`numberRelations`, () => {
       return this.dataset.reduce((relations, numbers) => {
         return numbers.reduce((relations, number) => {
@@ -74,7 +80,7 @@ class LotteryData {
           return relations
         }, relations)
       }, new StatisticMap())
-    })
+    }).get(key)
   }
 
   countOccurrences(numbers) {
@@ -85,25 +91,22 @@ class LotteryData {
     }, new Statistics())
   }
 
-  getNumbersByRelation() {
-    return intercalate(this.mergeRelations(this.getNumberStatistics().keys()))
+  getNumbersByRelation({ freq }) {
+    const keys = this.getNumberStatistics().keys()
+    const reverse = (freq === `more`)
+    return (reverse ? keys.reverse() : keys)
+      .reduce((numbers, number) => {
+        return this.mergeRelations(numbers, number, reverse)
+      }, [])
   }
 
-  mergeRelations(relations, numbers = []) {
-    const numberRelations = this.getNumberRelations()
-    for (let left = 0, right = relations.length - 1; left <= right;) {
-
-      let leftNumber = relations[left++]
-      let rightNumber = relations[right--]
-
-      if (!numbers.includes(leftNumber)) {
-        numbers.push(leftNumber)
-        this.mergeRelations(numberRelations.get(leftNumber).keys(), numbers)
-      }
-      if (leftNumber !== rightNumber && !numbers.includes(rightNumber)) {
-        numbers.push(rightNumber)
-        this.mergeRelations(numberRelations.get(rightNumber).keys(), numbers)
-      }
+  mergeRelations(numbers, number, reverse) {
+    if (!numbers.includes(number)) {
+      const relations = this.getNumberRelations(number).keys()
+      // add number
+      numbers.push(number)
+      // select the next number  
+      return this.mergeRelations(numbers, relations[reverse ? relations.length - 1 : 0], reverse)
     }
     return numbers
   }
