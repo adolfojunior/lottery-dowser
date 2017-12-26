@@ -39,7 +39,7 @@ The command migth parse the HTML and update the JS file at [/src/data](/src/data
 npm run update [megasena|lotofacil|lotomania]
 ```
 
-### Try it using Docker
+### Try it using Docker :whale:
 
 ```bash
 # Docker command
