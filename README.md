@@ -21,7 +21,7 @@ npm start -- --help
 ```
 Which some custom options:
 ```bash
-# generate lotofacil games with 7 numbers
+# generate megasena with 7 numbers
 npm start -- megasena -g --limit 10 --size 7
 # lotomania you can select 50 numbers to match 20
 npm start -- lotomania -g --limit 10 --size 50
@@ -44,7 +44,7 @@ npm run update [megasena|lotofacil|lotomania]
 ```bash
 # Docker command
 docker run -it --rm --name dowser -v "$PWD":/usr/src/app -w /usr/src/app node:9-alpine ...
-# generate lotofacil games with 7 numbers
+# generate megasena with 7 numbers
 docker run -it --rm --name dowser -v "$PWD":/usr/src/app -w /usr/src/app node:9-alpine node . megasena -g --limit 10 --size 7
 # lotomania you can select 50 numbers to match 20
 docker run -it --rm --name dowser -v "$PWD":/usr/src/app -w /usr/src/app node:9-alpine node . lotomania -g --limit 10 --size 50
