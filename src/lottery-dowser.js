@@ -154,7 +154,7 @@ class LotteryDowser {
   }
 
   validateLotomania(combination) {
-    const rules = [ [18,0],[19,0],[20,0] ]
+    const rules = [ [17,0], [18,0],[19,0],[20,0] ]
     return this.validateOccurrences(combination, rules)
   }
 
@@ -162,9 +162,9 @@ class LotteryDowser {
     const size = this.data.getRowSize()
     const stats = this.data.getRowStatistics().stats()
     const exceed = numbers.length - size
-    const min = stats.min + (exceed * (((stats.min + stats.avg) / 2) / size))
-    const max = stats.max + (exceed * (((stats.max + stats.avg) / 2) / size))
-    return total > min && total < max
+    const min = stats.min + (exceed * (stats.min / size))
+    const max = stats.max + (exceed * (stats.max / size))
+    return total >= min && total <= max
   }
 
   validateOccurrences({ occurrences }, rules) {
