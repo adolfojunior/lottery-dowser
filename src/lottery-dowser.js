@@ -3,6 +3,24 @@ const { log } = require('./log')
 const { pad } = require('./utils/string')
 const { Counter } = require('./utils/counter')
 
+function format(obj) {
+  function obj2str(obj) {
+    return Object
+      .entries(obj)
+      .map(([ key, val ]) => chalk`{whiteBright ${key}}: {redBright ${val}}`)
+      .join(`, `)
+  }
+  function array2str(obj) {
+    return obj.map((val) => chalk`{greenBright ${val}}`).join(`, `)
+  }
+  if (obj instanceof Array) {
+    return `[ ${array2str(obj)} ]`
+  } else if (obj instanceof Object) {
+    return `{ ${obj2str(obj)} }`
+  }
+  return obj
+}
+
 class LotteryDowser {
   constructor(name, data) {
     this.name = name
@@ -28,7 +46,7 @@ class LotteryDowser {
     const rowOccurrencyStatistics = this.data.getRowOccurrencyStatistics()
 
     log(chalk`{whiteBright.underline # By Number:}`)
-    log(chalk` - stats: {blueBright %j}`, numberStatistics.stats())
+    log(` - stats: %s`, format(numberStatistics.stats()))
 
     if (verbose || showNumbers) {
       numberStatistics.iterate((number, total) => {
@@ -37,9 +55,9 @@ class LotteryDowser {
         const relationToString = (number) => {
           const relationOccur = relations.get(number)
           const numberOccur = numberStatistics.get(number)
-          return `${pad(number, 2)}(${relationOccur}, ${numberOccur})`
+          return chalk`{whiteBright ${pad(number, 2)}} ({greenBright ${relationOccur}, ${numberOccur}})`
         }
-        log(chalk` * NUM {magentaBright %s}, total: {blueBright %s}, rel: {greenBright %s ... %s}`,
+        log(chalk` * NUM {magentaBright %s}, total: {blueBright %s}, rel: %s ... %s`,
           pad(number, 2),
           pad(total, 3),
           relationKeys.slice(0, 3).map(relationToString).join(' ,'),
@@ -49,15 +67,15 @@ class LotteryDowser {
     }
 
     log(chalk`{whiteBright.underline # By Row:}`)
-    log(chalk` - stats: {blueBright %j}`, rowStatistics.stats())
-    log(chalk` - occur: {yellowBright %j}`, rowOccurrencyStatistics.values())
+    log(` - stats: %s`, format(rowStatistics.stats()))
+    log(` - occur: %s`, format(rowOccurrencyStatistics.values()))
 
     if (verbose || showRows) {
       rowStatistics.iterate((row, total) => {
-        log(chalk` * ROW {magentaBright %s}, total: {blueBright %s}, occur: {yellowBright %j}`,
+        log(chalk` * ROW {magentaBright %s}, total: {blueBright %s}, occur: %s`,
           pad(Number(row) + 1, 4),
           pad(total, 4),
-          this.data.getRowOccurrences().get(row).values()
+          format(this.data.getRowOccurrences().get(row).values())
         )
       })
     }
@@ -72,16 +90,16 @@ class LotteryDowser {
     const lessFrequentlyTotal = this.data.getRowOccurrencyTotal(lessFrequently)
 
     log(chalk`{whiteBright.underline # Suggestions:}`)
-    log(chalk` - numbers: {greenBright %j}, total: {blueBright %s} (freq. hight to low)`,
-      moreFrequently,
+    log(chalk` - numbers: %s, total: {blueBright %s} (freq. hight to low)`,
+      format(moreFrequently),
       moreFrequentlyTotal
     )
-    log(chalk` - occur  : {yellowBright %j}`, this.data.countOccurrences(moreFrequently).values())
-    log(chalk` - numbers: {greenBright %j}, total: {blueBright %s} (freq. hight to low)`,
-      lessFrequently,
+    log(` - occur  : %s`, format(this.data.countOccurrences(moreFrequently).values()))
+    log(chalk` - numbers: %s, total: {blueBright %s} (freq. hight to low)`,
+      format(lessFrequently),
       lessFrequentlyTotal
     )
-    log(chalk` - occur  : {yellowBright %j}`, this.data.countOccurrences(lessFrequently).values())
+    log(` - occur  : %s`, format(this.data.countOccurrences(lessFrequently).values()))
   }
 
   generateCombinations({ generate, size, limit }) {
@@ -104,10 +122,10 @@ class LotteryDowser {
       const occurrences = this.data.countOccurrences(numbers)
 
       if (this.validateCombination(numbers, occurrences)) {
-        log(chalk`* COM {magentaBright %s}, numbers: {greenBright %j}, occurrency: {yellowBright %j}`,
+        log(chalk`* COM {magentaBright %s}, numbers: %s, occurrency: %s`,
           i,
-          numbers,
-          occurrences.values()
+          format(numbers),
+          format(occurrences.values())
         )
         counter.increment()
       } else if (i % 10000 === 0) {
@@ -128,7 +146,8 @@ class LotteryDowser {
     const validOccur = this.validateOccurrences(occurrences,
       [3,5],[4,0],[5,0],[6,0]
     )
-    return validOccur && this.validateRowTotal(combination)
+    // return validOccur && this.validateRowTotal(combination)
+    return true
   }
 
   validateLotofacil(combination, occurrences) {
