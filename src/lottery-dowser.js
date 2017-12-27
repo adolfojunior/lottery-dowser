@@ -146,8 +146,7 @@ class LotteryDowser {
     const validOccur = this.validateOccurrences(occurrences,
       [3,5],[4,0],[5,0],[6,0]
     )
-    // return validOccur && this.validateRowTotal(combination)
-    return true
+    return validOccur && this.validateRowTotal(combination)
   }
 
   validateLotofacil(combination, occurrences) {
