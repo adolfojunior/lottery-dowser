@@ -154,7 +154,7 @@ class LotteryDowser {
   }
 
   validateLotomania(combination) {
-    const rules = [ [17,0], [18,0],[19,0],[20,0] ]
+    const rules = [ [17,1], [18,0],[19,0],[20,0] ]
     return this.validateOccurrences(combination, rules)
   }
 
