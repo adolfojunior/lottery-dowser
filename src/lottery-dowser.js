@@ -144,7 +144,7 @@ class LotteryDowser {
   }
 
   validateMegasena(combination) {
-    const rules = [ [3,3],[4,0],[5,0],[6,0] ]
+    const rules = [ [3,2],[4,0],[5,0],[6,0] ]
     return this.validateOccurrences(combination, rules)
   }
 
@@ -159,8 +159,12 @@ class LotteryDowser {
   }
 
   validateTotal({ numbers, total }) {
+    const size = this.data.getRowSize()
     const stats = this.data.getRowStatistics().stats()
-    return total > stats.min && total < stats.max
+    const exceed = numbers.length - size
+    const min = stats.min + (exceed * (stats.avg / size))
+    const max = stats.max + (exceed * (stats.avg / size))
+    return total > min && total < max
   }
 
   validateOccurrences({ occurrences }, rules) {

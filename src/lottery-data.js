@@ -24,6 +24,10 @@ class LotteryData {
     Object.keys(this._fields).map(field => delete this._fields[field])
   }
 
+  getRowSize() {
+    return this.dataset[0].length
+  }
+
   getNumberStatistics() {
     return this._field(`numberStatistics`, () => {
       return this.dataset.reduce((stats, numbers) => {
