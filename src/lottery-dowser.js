@@ -95,7 +95,7 @@ class LotteryDowser {
       moreFrequentlyTotal
     )
     log(` - occur  : %s`, format(this.data.countOccurrences(moreFrequently).values()))
-    log(chalk` - numbers: %s, total: {blueBright %s} (freq. hight to low)`,
+    log(chalk` - numbers: %s, total: {blueBright %s} (freq. low to hight)`,
       format(lessFrequently),
       lessFrequentlyTotal
     )
@@ -113,63 +113,57 @@ class LotteryDowser {
 
     log(chalk`{whiteBright.underline # Combinations:} %s`, limit ? `(limit of ${limit})` : `(no limit)` )
 
-    this.data.combineNumbers(seedNumbers, size, (numbers, i) => {
+    this.data.combineNumbers(seedNumbers, size, (numbers, count) => {
       // stop it
       if (counter.greaterOrEqual(limit)) {
         return false
       }
-
+      const total = this.data.getRowOccurrencyTotal(numbers)
       const occurrences = this.data.countOccurrences(numbers)
 
-      if (this.validateCombination(numbers, occurrences)) {
-        log(chalk`* COM {magentaBright %s}, numbers: %s, occurrency: %s`,
-          i,
+      if (this.validateCombination({ numbers, total, occurrences })) {
+        log(chalk`* COM {magentaBright %s}, total: {blueBright %s}, numbers: %s, occurrency: %s`,
+          count,
+          total,
           format(numbers),
           format(occurrences.values())
         )
         counter.increment()
-      } else if (i % 10000 === 0) {
-        log(chalk`{yellowBright working...}`, i)
+      } else if (count % 10000 === 0) {
+        log(chalk`{yellowBright working...}`, count)
       }
     })
   }
 
-  validateCombination(combination, occurrences) {
+  validateCombination(combination) {
     const validator = this.validators[this.name]
-    if (validator) {
-      return validator(combination, occurrences)
+    if (validator && !validator(combination)) {
+      return false
     }
-    return true
+    return this.validateTotal(combination)
   }
 
-  validateMegasena(combination, occurrences) {
-    const validOccur = this.validateOccurrences(occurrences,
-      [3,5],[4,0],[5,0],[6,0]
-    )
-    return validOccur && this.validateRowTotal(combination)
+  validateMegasena(combination) {
+    const rules = [ [3,3],[4,0],[5,0],[6,0] ]
+    return this.validateOccurrences(combination, rules)
   }
 
-  validateLotofacil(combination, occurrences) {
-    const validOccur = this.validateOccurrences(occurrences,
-      [12,10],[13,0],[14,0],[15,0]
-    )
-    return validOccur && this.validateRowTotal(combination)
+  validateLotofacil(combination) {
+    const rules = [ [12,7],[13,0],[14,0],[15,0] ]
+    return this.validateOccurrences(combination, rules)
   }
 
-  validateLotomania(combination, occurrences) {
-    const validOccur = this.validateOccurrences(occurrences,
-      [9,3],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0]
-    )
-    return validOccur && this.validateRowTotal(combination)
+  validateLotomania(combination) {
+    const rules = [ [18,0],[19,0],[20,0] ]
+    return this.validateOccurrences(combination, rules)
   }
 
-  validateRowTotal(numbers) {
-    const rowStats = this.data.getRowStatistics().stats()
-    const rowTotal = this.data.getRowOccurrencyTotal(numbers)
-    return rowTotal > rowStats.min && rowTotal < rowStats.max
+  validateTotal({ numbers, total }) {
+    const stats = this.data.getRowStatistics().stats()
+    return total > stats.min && total < stats.max
   }
 
-  validateOccurrences(occurrences, ...rules) {
+  validateOccurrences({ occurrences }, rules) {
     for (let i = 0; i < rules.length; i++) {
       const [entry, value] = rules[i]
       const occur = occurrences.get(entry)
