@@ -162,8 +162,8 @@ class LotteryDowser {
     const size = this.data.getRowSize()
     const stats = this.data.getRowStatistics().stats()
     const exceed = numbers.length - size
-    const min = stats.min + (exceed * (stats.avg / size))
-    const max = stats.max + (exceed * (stats.avg / size))
+    const min = stats.min + (exceed * (((stats.min + stats.avg) / 2) / size))
+    const max = stats.max + (exceed * (((stats.max + stats.avg) / 2) / size))
     return total > min && total < max
   }
 
