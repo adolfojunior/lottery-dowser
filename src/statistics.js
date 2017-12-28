@@ -17,6 +17,9 @@ class SortedKeyMap {
   values() {
     return this._values
   }
+  array() {
+    return this.map((value, key) => value)
+  }
   set(key, value) {
     this.clearCache()
     return this._values[key] = value
@@ -24,8 +27,14 @@ class SortedKeyMap {
   get(key) {
     return this._values[key] || (this._values[key] = this._factory())
   }
-  iterate(fn) {
-    this.keys().forEach(key => fn(key, this.get(key)))
+  map(fn) {
+    return this.keys().map((key, i, array) => fn(this.get(key), key, array))
+  }
+  reduce(fn, initial) {
+    return this.keys().reduce((previous, key, i, array) => fn(previous, this.get(key), key, array), initial)
+  }
+  forEach(fn) {
+    this.keys().forEach((key, i, array) => fn(this.get(key), key, array))
   }
   clearCache() {
     this._cachedKeys = null

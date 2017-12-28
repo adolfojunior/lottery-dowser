@@ -49,7 +49,7 @@ class LotteryDowser {
     log(` - stats: %s`, format(numberStatistics.stats()))
 
     if (verbose || showNumbers) {
-      numberStatistics.iterate((number, total) => {
+      numberStatistics.forEach((total, number) => {
         const relations = this.data.getNumberRelations(number)
         const relationKeys = relations.keys()
         const relationToString = (number) => {
@@ -71,7 +71,7 @@ class LotteryDowser {
     log(` - occur: %s`, format(rowOccurrencyStatistics.values()))
 
     if (verbose || showRows) {
-      rowStatistics.iterate((row, total) => {
+      rowStatistics.forEach((total, row) => {
         log(chalk` * ROW {magentaBright %s}, total: {blueBright %s}, occur: %s`,
           pad(Number(row) + 1, 4),
           pad(total, 4),
