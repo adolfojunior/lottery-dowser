@@ -28,6 +28,14 @@ npm start -- lotomania -g --limit 10 --size 50
 # lotofacil you can select 50 numbers to match 20
 npm start -- lotofacil -g --limit 10
 ```
+### Check your numbers
+
+The option `--number` will compute statistics and occurrences for an inputted list of numbers.
+Format: `"first_list_of_numbers | second_list_of_numbers"`.
+
+```bash
+npm start -- megasena --numbers "1, 2, 3, 4, 5, 6| 7, 8, 9, 10, 11, 12"
+```
 
 ### Updating data
 
