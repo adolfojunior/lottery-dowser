@@ -48,6 +48,10 @@ yargs
     describe: `Limit the combinations that should be generated`,
     type: `number`
   })
+  .option(`numbers`, {
+    describe: `Numbers to be comparated aginst the current statistics`,
+    type: `string`
+  })
   .command({
     command: `megasena`,
     describe: `Generate MEGASENA statistics`,

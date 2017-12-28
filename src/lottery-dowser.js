@@ -35,6 +35,7 @@ class LotteryDowser {
 
   run(options) {
     this.executeStatistics(options)
+    this.checkNumbers(options)
     this.suggestNumbers(options)
     this.generateCombinations(options)
   }
@@ -81,7 +82,33 @@ class LotteryDowser {
     }
   }
 
-  suggestNumbers({ size }) {
+  checkNumbers({ numbers }) {
+    if (!numbers) {
+      return
+    }
+
+    log(chalk`{whiteBright.underline # Check numbers}`)
+
+    numbers.split(`|`).forEach(line => {
+
+      const numbers = line.split(`,`).map(Number)
+
+      const total = this.data.getRowOccurrencyTotal(numbers)
+      const occurrences = this.data.countOccurrences(numbers)
+  
+      log(chalk`* CHECK total: {blueBright %s}, numbers: %s, occurrency: %s`,
+        total,
+        format(numbers),
+        format(occurrences.values())
+      )
+    })
+  }
+
+  suggestNumbers({ numbers, size }) {
+
+    if (numbers) {
+      return
+    }
 
     const moreFrequently = this.data.getNumbersByRelation({ freq: `more` }).slice(0, size)
     const lessFrequently = this.data.getNumbersByRelation({ freq: `less` }).slice(0, size)
