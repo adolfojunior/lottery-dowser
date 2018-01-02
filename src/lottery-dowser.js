@@ -42,16 +42,14 @@ class LotteryDowser {
 
   executeStatistics({ verbose, showNumbers, showRows }) {
 
-    const rowStatistics = this.data.getRowStatistics()
-    const numberStatistics = this.data.getNumberStatistics()
-    const rowOccurrencyStatistics = this.data.getRowOccurrencyStatistics()
+    const rowStatistics = this.data.rowStatistics()
+    const numberStatistics = this.data.numberStatistics()
+    const rowOccurrencyStatistics = this.data.rowOccurrencyStatistics()
 
     log(chalk`{whiteBright.underline # By Number:}`)
-    log(` - stats: %s`, format(numberStatistics.stats()))
-
     if (verbose || showNumbers) {
-      numberStatistics.iterate((number, total) => {
-        const relations = this.data.getNumberRelations(number)
+      numberStatistics.forEach((total, number) => {
+        const relations = this.data.numberRelations(number)
         const relationKeys = relations.keys()
         const relationToString = (number) => {
           const relationOccur = relations.get(number)
@@ -66,20 +64,20 @@ class LotteryDowser {
         )
       })
     }
+    log(` - stats: %s`, format(numberStatistics.stats()))
 
     log(chalk`{whiteBright.underline # By Row:}`)
-    log(` - stats: %s`, format(rowStatistics.stats()))
-    log(` - occur: %s`, format(rowOccurrencyStatistics.values()))
-
     if (verbose || showRows) {
-      rowStatistics.iterate((row, total) => {
+      rowStatistics.forEach((total, row) => {
         log(chalk` * ROW {magentaBright %s}, total: {blueBright %s}, occur: %s`,
           pad(Number(row) + 1, 4),
           pad(total, 4),
-          format(this.data.getRowOccurrences().get(row).values())
+          format(this.data.rowOccurrences().get(row).values())
         )
       })
     }
+    log(` - stats: %s`, format(rowStatistics.stats()))
+    log(` - occur: %s`, format(rowOccurrencyStatistics.values()))
   }
 
   checkNumbers({ numbers }) {
@@ -93,7 +91,7 @@ class LotteryDowser {
 
       const numbers = line.split(`,`).map(Number)
 
-      const total = this.data.getRowOccurrencyTotal(numbers)
+      const total = this.data.rowOccurrencyTotal(numbers)
       const occurrences = this.data.countOccurrences(numbers)
   
       log(chalk`* CHECK total: {blueBright %s}, numbers: %s, occurrency: %s`,
@@ -110,11 +108,11 @@ class LotteryDowser {
       return
     }
 
-    const moreFrequently = this.data.getNumbersByRelation({ freq: `more` }).slice(0, size)
-    const lessFrequently = this.data.getNumbersByRelation({ freq: `less` }).slice(0, size)
+    const moreFrequently = this.data.numbersByRelation({ freq: `more` }).slice(0, size)
+    const lessFrequently = this.data.numbersByRelation({ freq: `less` }).slice(0, size)
 
-    const moreFrequentlyTotal = this.data.getRowOccurrencyTotal(moreFrequently)
-    const lessFrequentlyTotal = this.data.getRowOccurrencyTotal(lessFrequently)
+    const moreFrequentlyTotal = this.data.rowOccurrencyTotal(moreFrequently)
+    const lessFrequentlyTotal = this.data.rowOccurrencyTotal(lessFrequently)
 
     log(chalk`{whiteBright.underline # Suggestions:}`)
     log(chalk` - numbers: %s, total: {blueBright %s} (freq. hight to low)`,
@@ -136,7 +134,7 @@ class LotteryDowser {
     }
 
     const counter = new Counter()
-    const seedNumbers = this.data.getNumbersByRelation({ freq: `less` })
+    const seedNumbers = this.data.numbersByRelation({ freq: `less` })
 
     log(chalk`{whiteBright.underline # Combinations:} %s`, limit ? `(limit of ${limit})` : `(no limit)` )
 
@@ -145,7 +143,7 @@ class LotteryDowser {
       if (counter.greaterOrEqual(limit)) {
         return false
       }
-      const total = this.data.getRowOccurrencyTotal(numbers)
+      const total = this.data.rowOccurrencyTotal(numbers)
       const occurrences = this.data.countOccurrences(numbers)
 
       if (this.validateCombination({ numbers, total, occurrences })) {
@@ -186,8 +184,8 @@ class LotteryDowser {
   }
 
   validateTotal({ numbers, total }) {
-    const size = this.data.getRowSize()
-    const stats = this.data.getRowStatistics().stats()
+    const size = this.data.rowSize()
+    const stats = this.data.rowStatistics().stats()
     const exceed = numbers.length - size
     const min = stats.min + (exceed * (stats.min / size))
     const max = stats.max + (exceed * (stats.max / size))

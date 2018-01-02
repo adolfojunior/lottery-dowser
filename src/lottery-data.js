@@ -7,7 +7,7 @@ class LotteryData {
 
   constructor(dataset) {
     this._fields = {}
-    this.dataset = dataset
+    this._dataset = dataset
   }
 
   _field(field, fn) {
@@ -24,37 +24,41 @@ class LotteryData {
     Object.keys(this._fields).map(field => delete this._fields[field])
   }
 
-  getRowSize() {
-    return this.dataset[0].length
+  rows() {
+    return this._dataset
   }
 
-  getNumberStatistics() {
+  rowSize() {
+    return this._dataset[0].length
+  }
+
+  numberStatistics() {
     return this._field(`numberStatistics`, () => {
-      return this.dataset.reduce((stats, numbers) => {
+      return this._dataset.reduce((stats, numbers) => {
         numbers.forEach(n => stats.count(n))
         return stats
       }, new Statistics())
     })
   }
   
-  getRowStatistics() {
+  rowStatistics() {
     return this._field(`rowStatistics`, () => {
-      return this.dataset.reduce((stats, numbers, row) => {
-        stats.set(row, this.getRowOccurrencyTotal(numbers))
+      return this._dataset.reduce((stats, numbers, row) => {
+        stats.set(row, this.rowOccurrencyTotal(numbers))
         return stats
       }, new Statistics())
     })
   }
 
-  getRowOccurrencyTotal(numbers) {
-    const stats = this.getNumberStatistics()
+  rowOccurrencyTotal(numbers) {
+    const stats = this.numberStatistics()
     return numbers.reduce((total, number) => total + stats.get(number), 0)
   }
   
-  getRowOccurrences() {
+  rowOccurrences() {
     return this._field(`rowOccurrences`, () => {
-      return this.dataset.reduce((occurrences, numbers, row) => {
-        return this.dataset.reduce((occurrences, other) => {
+      return this._dataset.reduce((occurrences, numbers, row) => {
+        return this._dataset.reduce((occurrences, other) => {
           occurrences.get(row).count(countIntersection(numbers, other))
           return occurrences
         }, occurrences)
@@ -62,12 +66,12 @@ class LotteryData {
     })
   }
 
-  getRowOccurrencyStatistics() {
+  rowOccurrencyStatistics() {
     return this._field(`rowOccurrencyStatistics`, () => {
       const occurrences = new Statistics()
-      const rowOccurrences = this.getRowOccurrences()
-      rowOccurrences.iterate((row, statistics) => {
-        statistics.iterate((occurrency, total) => {
+      const rowOccurrences = this.rowOccurrences()
+      rowOccurrences.forEach((statistics, row) => {
+        statistics.forEach((total, occurrency) => {
           occurrences.add(occurrency, total)
         })
       })
@@ -75,9 +79,9 @@ class LotteryData {
     })
   }
 
-  getNumberRelations(key) {
+  numberRelations(key) {
     return this._field(`numberRelations`, () => {
-      return this.dataset.reduce((relations, numbers) => {
+      return this._dataset.reduce((relations, numbers) => {
         return numbers.reduce((relations, number) => {
           const relation = relations.get(number)
           numbers.filter(n => n !== number).forEach(n => relation.count(n))
@@ -89,14 +93,14 @@ class LotteryData {
 
   countOccurrences(numbers) {
     const keys = numbers.map(Number)
-    return this.dataset.reduce((stats, other) => {
+    return this._dataset.reduce((stats, other) => {
       stats.count(countIntersection(keys, other))
       return stats
     }, new Statistics())
   }
 
-  getNumbersByRelation({ freq }) {
-    const keys = this.getNumberStatistics().keys()
+  numbersByRelation({ freq }) {
+    const keys = this.numberStatistics().keys()
     const reverse = (freq === `more`)
     return (reverse ? keys.reverse() : keys)
       .reduce((numbers, number) => {
@@ -106,7 +110,7 @@ class LotteryData {
 
   mergeRelations(numbers, number, reverse) {
     if (!numbers.includes(number)) {
-      const relations = this.getNumberRelations(number).keys()
+      const relations = this.numberRelations(number).keys()
       // add number
       numbers.push(number)
       // select the next number  

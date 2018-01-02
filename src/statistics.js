@@ -4,15 +4,17 @@ class SortedKeyMap {
     this._values = {}
     this._factory = factory
     this._sorter = sorter
-    this._cachedKeys = null
+    this._keys = null
   }
   keys() {
-    if (this._cachedKeys !== null) {
-      return Array.from(this._cachedKeys)
+    return Array.from(this.cachedKeys())
+  }
+  cachedKeys() {
+    if (this._keys === null) {
+      this._keys = Object.keys(this._values)
+      this._sorter && this._keys.sort((a, b) => this._sorter(this.get(a), this.get(b)))
     }
-    const keys = Object.keys(this._values)
-    this._sorter && keys.sort((a, b) => this._sorter(this.get(a), this.get(b)))
-    return Array.from(this._cachedKeys = keys)
+    return this._keys
   }
   values() {
     return this._values
@@ -24,11 +26,17 @@ class SortedKeyMap {
   get(key) {
     return this._values[key] || (this._values[key] = this._factory())
   }
-  iterate(fn) {
-    this.keys().forEach(key => fn(key, this.get(key)))
+  map(fn) {
+    return this.cachedKeys().map((key, index, array) => fn(this.get(key), key, array))
+  }
+  reduce(fn) {
+    return this.cachedKeys().reduce((last, key, index, array) => fn(last, this.get(key), key, array))
+  }
+  forEach(fn) {
+    this.cachedKeys().forEach((key, index, array) => fn(this.get(key), key, array))
   }
   clearCache() {
-    this._cachedKeys = null
+    this._keys = null
   }
 }
 
