@@ -4,13 +4,11 @@ const cheerio = require('cheerio')
 const yargs = require('yargs')
 
 function readFile(name) {
-  const file = path.resolve(__dirname, name)
-  return fs.readFileSync(file, `utf8`)
+  return fs.readFileSync(path.resolve(name), `utf8`)
 }
 
 function writeFile(name, content) {
-  const file = path.resolve(process.cwd(), `src`, `data`, name)
-  fs.writeFileSync(file, content);
+  fs.writeFileSync(path.resolve(name), content)
 }
 
 function saveToJs(name, lines) {

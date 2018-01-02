@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "update": "node script/update.js",
+    "update": "node src/data/update.js",
     "test": "mocha test/**/*.test.js"
   },
   "dependencies": {
