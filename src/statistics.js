@@ -1,50 +1,55 @@
 
-class SortedKeyMap {
-  constructor({ factory, sorter }) {
-    this._values = {}
-    this._factory = factory
-    this._sorter = sorter
+class LazyArray {
+  constructor({ initValue, sorter }) {
+    this._array = []
+    this._initValue = initValue
+    this._sorter = sorter || ((a, b) => a - b)
+    this._obj = null
     this._keys = null
   }
   keys() {
-    return Array.from(this.cachedKeys())
-  }
-  cachedKeys() {
     if (this._keys === null) {
-      this._keys = Object.keys(this._values)
-      this._sorter && this._keys.sort((a, b) => this._sorter(this.get(a), this.get(b)))
+      this._keys = []
+      this.forEach((value, key) => {
+        this._keys.push(key)
+      })
+      this._keys.sort((a, b) => this._sorter(this.get(a), this.get(b)))
     }
     return this._keys
   }
-  values() {
-    return this._values
+  object(fn) {
+    if (this._obj === null) {
+      this._obj = {}
+      this.forEach((value, key) => {
+        this._obj[key] = value
+      })
+    }
+    return this._obj
   }
-  set(key, value) {
-    this.clearCache()
-    return this._values[key] = value
-  }
-  get(key) {
-    return this._values[key] || (this._values[key] = this._factory())
-  }
-  map(fn) {
-    return this.cachedKeys().map((key, index, array) => fn(this.get(key), key, array))
-  }
-  reduce(fn) {
-    return this.cachedKeys().reduce((last, key, index, array) => fn(last, this.get(key), key, array))
+  sortedForEach(fn) {
+    this.keys().forEach((key) => fn(this.get(key), key, this._array))
   }
   forEach(fn) {
-    this.cachedKeys().forEach((key, index, array) => fn(this.get(key), key, array))
+    this._array.forEach(fn)
   }
-  clearCache() {
+  set(key, value) {
+    this.clear()
+    return this._array[key] = value
+  }
+  get(key) {
+    return this._array[key] || (this._array[key] = this._initValue(key))
+  }
+  clear() {
+    this._obj = null
     this._keys = null
   }
 }
 
-class Statistics extends SortedKeyMap {
-  constructor() {
+class Statistics extends LazyArray {
+  constructor(sorter) {
     super({
-      factory: () => (0),
-      sorter: (a, b) => (a - b)
+      initValue: () => 0,
+      sorter
     })
     this._stats = null
   }
@@ -71,8 +76,7 @@ class Statistics extends SortedKeyMap {
       avg: 0,
       p75: this.get(keys[~~(size * (0.75))]),
       p90: this.get(keys[~~(size * (0.90))]),
-      p95: this.get(keys[~~(size * (0.95))]),
-      p99: this.get(keys[~~(size * (0.99))])
+      p95: this.get(keys[~~(size * (0.95))])
     }
     keys.forEach(key => {
       const value = this.get(key)
@@ -84,23 +88,22 @@ class Statistics extends SortedKeyMap {
     stats.avg = stats.avg / size
     return stats
   }
-  clearCache() {
-    super.clearCache()
+  clear() {
+    super.clear()
     this._stats = null
   }
 }
 
-class StatisticMap extends SortedKeyMap {
-  constructor() {
+class StatisticsArray extends LazyArray {
+  constructor(sorter) {
     super({
-      factory: () => new Statistics(),
-      sorter: (a, b) => (a.stats().total - b.stats().total)
+      initValue: () => new Statistics(sorter),
+      sorter: (a, b) => a.stats().total - b.stats().total
     })
   }
 }
 
 module.exports = {
   Statistics,
-  StatisticMap,
-  SortedKeyMap
+  StatisticsArray
 }

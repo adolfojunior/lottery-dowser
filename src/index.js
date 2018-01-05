@@ -1,11 +1,11 @@
 const yargs = require('yargs')
 const { log } = require('./log')
-const { loadData } = require('./data')
+const { dataset } = require('./data')
 const { LotteryData } = require('./lottery-data')
 const { LotteryDowser } = require('./lottery-dowser')
 
 function execute(name, options) {
-  const data = new LotteryData(loadData(name))
+  const data = new LotteryData(dataset(name))
   const dowser = new LotteryDowser(name, data)
   dowser.run(options)
 }
@@ -43,6 +43,19 @@ yargs
   .option(`size`, {
     describe: `Quantity of numbers at each combination`,
     type: `number`
+  })
+  .option(`offset`, {
+    describe: `Combination offset`,
+    type: `number`
+  })
+  .option(`offsetLimit`, {
+    describe: `Combination limit to offset`,
+    type: `number`
+  })
+  .option(`validateStats`, {
+    describe: `Validate the combination using the row statistics`,
+    type: `boolean`,
+    default: true
   })
   .option(`limit`, {
     describe: `Limit the combinations that should be generated`,
