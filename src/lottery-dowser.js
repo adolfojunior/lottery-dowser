@@ -35,6 +35,9 @@ class LotteryDowser {
   }
 
   run(options) {
+    if (options.debug) {
+      log(chalk`# {red DEBUG:}`, format(options))
+    }
     this.executeStatistics(options)
     this.checkNumbers(options)
     this.suggestNumbers(options)
@@ -186,12 +189,12 @@ class LotteryDowser {
   }
 
   validateMegasena(combination) {
-    const rules = [ [3,5], [4,0],[5,0],[6,0] ]
+    const rules = [ [3,2], [4,0],[5,0],[6,0] ]
     return this.validateOccurrences(combination, rules)
   }
 
   validateLotofacil(combination) {
-    const rules = [ [12,15],[13,0],[14,0],[15,0] ]
+    const rules = [ [12,10],[13,0],[14,0],[15,0] ]
     return this.validateOccurrences(combination, rules)
   }
 

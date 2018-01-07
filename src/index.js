@@ -35,6 +35,11 @@ yargs
     describe: `Show detailed information about each row`,
     type: `boolean`
   })
+  .option(`debug`, {
+    describe: `Show debug information`,
+    type: `boolean`,
+    default: false
+  })
   .option(`verbose`, {
     alias: `v`,
     describe: `Show detailed information about statistics`,
