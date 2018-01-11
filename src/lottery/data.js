@@ -1,5 +1,5 @@
-const { Statistics, StatisticsArray } = require('./statistics')
-const { countSortedIntersection, generateCombinations } = require('./utils/array')
+const { Statistics, StatisticsArray } = require('../statistics')
+const { countSortedIntersection, generateCombinations } = require('../utils/array')
 
 class CachedFields {
   constructor(dataset) {
@@ -48,7 +48,7 @@ class LotteryData extends CachedFields {
       return statistics
     })
   }
-  
+
   rowStatistics() {
     return this.field(`rowStatistics`, () => {
       const dataset = this._dataset
@@ -68,18 +68,48 @@ class LotteryData extends CachedFields {
     }
     return total
   }
-  
+
   rowOccurrences() {
     return this.field(`rowOccurrences`, () => {
       const dataset = this._dataset
-      const occurrences = new StatisticsArray()
+      const statistics = new StatisticsArray()
       for (let i = 0; i < dataset.length; i++) {
         for (let j = 0; j < dataset.length; j++) {
-          occurrences.get(i).count(countSortedIntersection(dataset[i], dataset[j]))
+          statistics.get(i).count(countSortedIntersection(dataset[i], dataset[j]))
         }
+      }
+      return statistics
+    })
+  }
+
+  rowOccurrencesBeforeMatch() {
+    return this.field(`rowStatisticsOccurrencyBefore`, () => {
+      const dataset = this._dataset
+      const occurrences = new StatisticsArray()
+      for (let row = 0; row < dataset.length; row++) {
+        const rowStatistics = this.rowStatisticsBeforeMatch(row)
+        rowStatistics.forEach((total, ocurrency) => {
+          occurrences.get(ocurrency).set(row, total)
+        })
       }
       return occurrences
     })
+  }
+
+  rowStatisticsBeforeMatch(row) {
+    return this.field(`rowStatisticsBeforeMatch`, () => {
+      const dataset = this._dataset
+      const statistics = new StatisticsArray()
+      for (let row = 0; row < dataset.length; row++) {
+        const numbers = dataset[row]
+        const rowStatistics = statistics.get(row)
+        // compute untill it match
+        for (let i = 0; i < row; i++) {
+          rowStatistics.count(countSortedIntersection(numbers, dataset[i]))
+        }
+      }
+      return statistics
+    }).get(row)
   }
 
   rowOccurrencyStatistics() {

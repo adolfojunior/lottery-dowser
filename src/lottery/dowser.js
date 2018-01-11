@@ -1,54 +1,50 @@
 const chalk = require('chalk')
 const moment = require('moment')
-const { log } = require('./log')
-const { pad } = require('./utils/string')
-const { Counter } = require('./utils/counter')
-
-function format(obj) {
-  function obj2str(obj) {
-    return Object
-      .entries(obj)
-      .map(([ key, val ]) => chalk`{whiteBright ${key}}: {redBright ${val}}`)
-      .join(`, `)
-  }
-  function array2str(obj) {
-    return obj.map((val) => chalk`{greenBright ${val}}`).join(`, `)
-  }
-  if (obj instanceof Array) {
-    return `[ ${array2str(obj)} ]`
-  } else if (obj instanceof Object) {
-    return `{ ${obj2str(obj)} }`
-  }
-  return obj
-}
+const { log, format } = require('../log')
+const { pad } = require('../utils/string')
+const { Counter } = require('../utils/counter')
+const {
+  TotalValidator,
+  BeforeMatchValidator,
+  ZeroOcurrencesValidator
+} = require('./validators')
 
 class LotteryDowser {
   constructor(name, data) {
     this.name = name
     this.data = data
-    // register combination validators
-    this.validators = {
-      megasena: this.validateMegasena.bind(this),
-      lotofacil: this.validateLotofacil.bind(this),
-      lotomania: this.validateLotomania.bind(this)
-    }
+    this.validations = []
   }
 
   run(options) {
     if (options.debug) {
       log(chalk`# {red DEBUG:}`, format(options))
     }
+    this.initializeValidations(options)
     this.executeStatistics(options)
     this.checkNumbers(options)
     this.suggestNumbers(options)
     this.generateCombinations(options)
   }
 
+  initializeValidations(options) {
+    this.validations = []
+    if (options.validateTotal !== false) {
+      this.validations.push(new TotalValidator(this.name, this.data))
+    }
+    if (options.validateZero !== false) {
+      this.validations.push(new ZeroOcurrencesValidator(this.name, this.data))
+    }
+    if (options.validateBeforeMatch !== false) {
+      this.validations.push(new BeforeMatchValidator(this.name, this.data))
+    }
+  }
+
   executeStatistics({ verbose, showNumbers, showRows }) {
 
     const rowStatistics = this.data.rowStatistics()
     const numberStatistics = this.data.numberStatistics()
-    const rowOccurrencyStatistics = this.data.rowOccurrencyStatistics()
+    const rowOccurrencesBeforeMatch = this.data.rowOccurrencesBeforeMatch()
 
     log(chalk`{whiteBright.underline # By Number:}`)
     if (verbose || showNumbers) {
@@ -76,12 +72,15 @@ class LotteryDowser {
         log(chalk` * ROW {magentaBright %s}, total: {blueBright %s}, occur: %s`,
           pad(Number(row) + 1, 4),
           pad(total, 4),
-          format(this.data.rowOccurrences().get(row).object())
+          format(this.data.rowStatisticsBeforeMatch(row).object())
         )
       })
     }
     log(` - stats: %s`, format(rowStatistics.stats()))
-    log(` - occur: %s`, format(rowOccurrencyStatistics.object()))
+
+    rowOccurrencesBeforeMatch.forEach((statistics, occurrency) => {
+      log(` - occur: %s`, occurrency, format(statistics.stats()))
+    })
   }
 
   checkNumbers({ numbers }) {
@@ -131,7 +130,7 @@ class LotteryDowser {
     log(` - occur  : %s`, format(this.data.countOccurrences(lessFrequently).object()))
   }
 
-  generateCombinations({ generate, size, limit, offset = 0, offsetLimit = 0, validateStats = true }) {
+  generateCombinations({ generate, size, limit, offset = 0, offsetLimit = 0 }) {
 
     if (!generate) {
       return
@@ -162,7 +161,7 @@ class LotteryDowser {
       const total = this.data.rowOccurrencyTotal(numbers)
       const occurrences = this.data.countOccurrences(numbers)
 
-      if (this.validateCombination({ numbers, total, occurrences }, validateStats)) {
+      if (this.validate({ numbers, total, occurrences })) {
         log(chalk`* COM {magentaBright %s}, total: {blueBright %s}, numbers: %s, occurrency: %s`,
           count,
           total,
@@ -177,46 +176,10 @@ class LotteryDowser {
     log(`Generated %s in %s`, totalCombinations, moment().diff(startTime) / 1000)
   }
 
-  validateCombination(combination, validateStats) {
-    const validator = this.validators[this.name]
-    if (validator && !validator(combination)) {
-      return false
-    }
-    if (validateStats) {
-      return this.validateTotal(combination)
-    }
-    return true
-  }
-
-  validateMegasena(combination) {
-    const rules = [ [3,2], [4,0],[5,0],[6,0] ]
-    return this.validateOccurrences(combination, rules)
-  }
-
-  validateLotofacil(combination) {
-    const rules = [ [12,10],[13,0],[14,0],[15,0] ]
-    return this.validateOccurrences(combination, rules)
-  }
-
-  validateLotomania(combination) {
-    const rules = [ [17,1], [18,0],[19,0],[20,0] ]
-    return this.validateOccurrences(combination, rules)
-  }
-
-  validateTotal({ numbers, total }) {
-    const size = this.data.rowSize()
-    const stats = this.data.rowStatistics().stats()
-    const exceed = numbers.length - size
-    const min = stats.min + (exceed * (stats.min / size))
-    const max = stats.max + (exceed * (stats.max / size))
-    return total >= min && total <= max
-  }
-
-  validateOccurrences({ occurrences }, rules) {
-    for (let i = 0; i < rules.length; i++) {
-      const [entry, value] = rules[i]
-      const occur = occurrences.get(entry)
-      if (occur > value) {
+  validate(combination) {
+    const { validations } = this
+    for (let i = 0; i < validations.length; i++) {
+      if (!validations[i].validate(combination)) {
         return false
       }
     }

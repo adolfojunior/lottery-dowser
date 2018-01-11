@@ -1,8 +1,8 @@
 const yargs = require('yargs')
 const { log } = require('./log')
 const { dataset } = require('./data')
-const { LotteryData } = require('./lottery-data')
-const { LotteryDowser } = require('./lottery-dowser')
+const { LotteryData } = require('./lottery/data')
+const { LotteryDowser } = require('./lottery/dowser')
 
 function execute(name, options) {
   const data = new LotteryData(dataset(name))
